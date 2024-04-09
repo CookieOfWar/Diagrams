@@ -13,3 +13,23 @@ body {
   /* transform: rotateX(180deg); */
   background-color: rgb(58, 59, 61);
 }
+
+.mainDiv {
+	display: flex;
+	justify-content: center;
+  align-items: center;
+	flex-direction: column;
+}
+
+#inpFunction{
+	width: 90%;
+	margin-top: 5%;
+  background-color: rgb(81, 83, 86);
+  color: rgb(255, 255, 255);
+  border: none;
+  outline: none;
+  font-size: 2em;
+	height: 2em;
+	text-align: center;
+  font-family: 'Open Sans', sans-serif;
+}
