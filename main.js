@@ -2,7 +2,7 @@ const canvas = document.getElementById("canvas");
 const ctx2 = canvas.getContext("2d");
 const ctx3 = canvas.getContext("3d");
 const inputField = document.getElementById("inpFunction");
-var F = "x^2+3";
+var F = "13x^2+18xy+37y^2-26x-18y-27";
 
 const canvasWidth = canvas.clientWidth;
 const canvasHeight = canvas.clientHeight;
@@ -15,11 +15,13 @@ var yAxis = Math.round(canvasHeight / scaleY / 2) * scaleY;
 var mouseInCanvas = false;
 
 const XGridOnly = false;
+const STEP = 5;
 
-getEllips("4x^2-2xy+9y^2+6x+8y+1");
+// getEllips("13x^2+18xy+37y^2-26x-18y-27");
 
 drawGrid();
-drawDiagram("x^2+3");
+// drawDiagram("x^2+3");
+drawDiagram("13x^2+18xy+37y^2-26x-18y-27");
 function drawGrid() {
   ctx2.clearRect(0, 0, canvasWidth, canvasHeight);
 
@@ -67,18 +69,29 @@ canvas.addEventListener("mouseleave", () => {
  * @param f string
  */
 function drawDiagram(f) {
-  if (/([+-]?\d+)x\^2([+-]\d+)xy([+-]\d+)y\^2([+-]\d+)x([+-]\d+)y([+-]\d+)/.test(f)) {
-    getEllips(f);
+  if (
+    /([+-]?\d+)x\^2([+-]\d+)xy([+-]\d+)y\^2([+-]\d+)x([+-]\d+)y([+-]\d+)/.test(
+      f
+    )
+  ) {
+    F = f;
+    let ellipsParams = getEllips(f);
+    drawEllipse(
+      ellipsParams[0],
+      ellipsParams[1],
+      ellipsParams[2],
+      ellipsParams[3],
+      ellipsParams[4],
+      ellipsParams[5]
+    );
+    return;
   }
   for (let i = 0; i <= canvasWidth; i += 1) {
     if (
-      (XGridOnly
-        ? (i - xAxis) % scaleX
-        : i % (scaleX / 10) == 0 || XGridOnly
-        ? (i - xAxis) % scaleX
-        : i % (scaleX / 10) == NaN) &&
+      (XGridOnly ? (i - xAxis) % scaleX == 0 : i % (scaleX / STEP) == 0) &&
       i != 0
     ) {
+      console.log(i);
       const x = (i - xAxis) / scaleX;
 
       let fTemp = f.slice(0);
@@ -94,8 +107,9 @@ function drawDiagram(f) {
       if (y != Infinity && y != -Infinity) {
         ctx2.fillStyle = "red";
         ctx2.fillRect(x * scaleX + xAxis - 2, yAxis - scaleY * y - 2, 4, 4);
-        if (i + (XGridOnly ? scaleX : scaleX / 10) <= canvasWidth) {
-          let xTemp = (i + (XGridOnly ? scaleX : scaleX / 10) - xAxis) / scaleX;
+        if (i + (XGridOnly ? scaleX : scaleX / STEP) <= canvasWidth) {
+          let xTemp =
+            (i + (XGridOnly ? scaleX : scaleX / STEP) - xAxis) / scaleX;
           let yTemp = eval(temp.replace(`${x}`, `${xTemp}`));
           ctx2.strokeStyle = "blue";
           line(
@@ -113,7 +127,7 @@ function drawDiagram(f) {
 canvas.addEventListener("mousemove", (e) => {
   if (mouseInCanvas) {
     if (e.buttons & 1) {
-      //console.log(e);
+      // console.log(e);
       xAxis += e.movementX;
       yAxis += e.movementY;
       drawGrid();
@@ -156,25 +170,144 @@ inputField.addEventListener("keyup", (e) => {
 });
 
 function getEllips(f) {
+  let baseA = parseInt(
+    f.match(
+      /([+-]?[.0-9]+)x\^2([+-][.0-9]+)xy([+-][.0-9]+)y\^2([+-][.0-9]+)x([+-][.0-9]+)y([+-][.0-9]+)/
+    )[1]
+  );
+  let baseB =
+    parseInt(
+      f.match(
+        /([+-]?[.0-9]+)x\^2([+-][.0-9]+)xy([+-][.0-9]+)y\^2([+-][.0-9]+)x([+-][.0-9]+)y([+-][.0-9]+)/
+      )[2]
+    ) / 2;
+  let baseC = parseInt(
+    f.match(
+      /([+-]?[.0-9]+)x\^2([+-][.0-9]+)xy([+-][.0-9]+)y\^2([+-][.0-9]+)x([+-][.0-9]+)y([+-][.0-9]+)/
+    )[3]
+  );
+  let baseD =
+    parseInt(
+      f.match(
+        /([+-]?[.0-9]+)x\^2([+-][.0-9]+)xy([+-][.0-9]+)y\^2([+-][.0-9]+)x([+-][.0-9]+)y([+-][.0-9]+)/
+      )[4]
+    ) / 2;
+  let baseE =
+    parseInt(
+      f.match(
+        /([+-]?[.0-9]+)x\^2([+-][.0-9]+)xy([+-][.0-9]+)y\^2([+-][.0-9]+)x([+-][.0-9]+)y([+-][.0-9]+)/
+      )[5]
+    ) / 2;
+  let baseF = parseInt(
+    f.match(
+      /([+-]?[.0-9]+)x\^2([+-][.0-9]+)xy([+-][.0-9]+)y\^2([+-][.0-9]+)x([+-][.0-9]+)y([+-][.0-9]+)/
+    )[6]
+  );
+
   const A = [
     [0, 0],
     [0, 0],
   ];
-  A[0][0] = parseInt(f.match(
-    /([+-]?\d+)x\^2([+-]\d+)xy([+-]\d+)y\^2([+-]\d+)x([+-]\d+)y([+-]\d+)/
-  )[1]);
-  A[0][1] = A[1][0] = parseInt(f.match(
-    /([+-]?\d+)x\^2([+-]\d+)xy([+-]\d+)y\^2([+-]\d+)x([+-]\d+)y([+-]\d+)/
-  )[2])/2;
-  A[1][1] = parseInt(f.match(
-    /([+-]?\d+)x\^2([+-]\d+)xy([+-]\d+)y\^2([+-]\d+)x([+-]\d+)y([+-]\d+)/
-  )[3]);
-	console.log(A);
+  A[0][0] = baseA;
+  A[0][1] = A[1][0] = baseB;
+  A[1][1] = baseC;
+  // console.log(A);
 
   if (Determinant(A) != 0) {
+    // Finding S, delata and nD
+
     let S = A[0][0] + A[1][1];
     let delta = Determinant(A);
-		let nd = [[A[0][0], A[1][1], parseInt(f.match(/([+-]?\d+)x\^2([+-]\d+)xy([+-]\d+)y\^2([+-]\d+)x([+-]\d+)y([+-]\d+)/)[4])/2], []]
+
+    let nA = [
+      [baseA, baseB, baseD],
+      [baseB, baseC, baseE],
+      [baseD, baseE, baseF],
+    ];
+    let nD = Determinant(nA);
+
+    // Finding a1, c1 and f1
+
+    let f1 = nD / delta;
+    let temp = Math.sqrt(S ** 2 - 4 * delta);
+    let a1 = (S - temp) / 2;
+    let c1 = S - a1;
+
+    let equation = `${a1}x^2 + ${c1}y^2 + ${f1}`;
+    equation = equation
+      .replaceAll(" ", "")
+      .replaceAll("+-", "-")
+      .replaceAll("-+", "-");
+
+    equation = equation.replace(
+      /([+-]?[.0-9]+)x\^2([+-]+[.0-9]+)y\^2([+-]+[.0-9]+)/,
+      (parseInt(
+        equation.match(/([+-]?[.0-9]+)x\^2([+-]+[.0-9]+)y\^2([+-]+[.0-9]+)/)[1]
+      ) *
+        -1) /
+        parseInt(
+          equation.match(
+            /([+-]?[.0-9]+)x\^2([+-]+[.0-9]+)y\^2([+-]+[.0-9]+)/
+          )[3]
+        ) +
+        "x^2" +
+        "+" +
+        (parseInt(
+          equation.match(
+            /([+-]?[.0-9]+)x\^2([+-]+[.0-9]+)y\^2([+-]+[.0-9]+)/
+          )[2]
+        ) *
+          -1) /
+          parseInt(
+            equation.match(
+              /([+-]?[.0-9]+)x\^2([+-]+[.0-9]+)y\^2([+-]+[.0-9]+)/
+            )[3]
+          ) +
+        "y^2"
+    );
+    equation = equation
+      .replaceAll(" ", "")
+      .replaceAll("+-", "-")
+      .replaceAll("-+", "-");
+
+    // Finding a and b (semiaxis)
+
+    temp = equation.match(/([+-]?[.0-9]+)x\^2([+-][.0-9]+)y\^2/)[1];
+    let a, b;
+
+    if (temp[0] != "-") {
+      a = Math.sqrt(temp);
+    } else {
+      a = Math.sqrt(temp.slice(1));
+    }
+
+    temp = equation.match(/([+-]?[.0-9]+)x\^2([+-][.0-9]+)y\^2/)[2];
+    if (temp[0] != "-") {
+      b = Math.sqrt(temp);
+    } else {
+      b = Math.sqrt(temp.slice(1));
+    }
+
+    a = 1 / a;
+    b = 1 / b;
+    // console.log(equation, a, b);
+
+    // Finding x0 and y0
+    let y0 = parseInt(
+      ((baseD * baseB) / baseA - baseE) / (baseB ** 2 / baseA - baseC)
+    );
+    let x0 = parseInt(
+      ((baseB * baseE) / baseC - baseD) / (baseA - baseB ** 2 / baseC)
+    );
+    // console.log(x0, y0);
+
+    // Finding rotation angle of the new coordinate system
+
+    let newAngle = Math.atan((2 * baseB) / (baseA - baseC)) / 2;
+    // console.log(newAngle);
+
+    // Returning sizes (a, b), start point (x0, y0) and angle of the new coordinate system (newAngle)
+    return [a, b, x0, y0, newAngle, equation];
   }
 }
 
@@ -214,4 +347,107 @@ function Determinant(A) {
   }
 
   return detA;
+}
+
+function drawEllipse(a, b, x0, y0, angle, f) {
+  for (let i = 0 + xAxis - a * scaleX; i <= 0 + xAxis + a * scaleX; i += 1) {
+    if (
+      (XGridOnly ? (i - xAxis) % scaleX == 0 : i % (scaleX / STEP) == 0) &&
+      i != 0
+    ) {
+      console.log("test");
+      let groups = f.match(/([+-]?)([.0-9]+)x\^2([+-]+[.0-9]+)y\^2/);
+
+      let fTemp = `Math.sqrt(Math.abs((${groups[3]})*(1-x**2*${groups[1]}${groups[2]})))`;
+      let x = (i - xAxis) / scaleX;
+      console.log(x);
+      let temp = fTemp
+        .replace(/(\d+)x/, "$1*x")
+        .replace("^", "**")
+        .replace(/x/g, `${x}`)
+        .replace(/--([.0-9]+)\*\*/g, "-(-$1)**")
+        .replace(/-([.0-9]+\*\*2)/, "-($1)");
+
+      let y = eval(temp);
+
+      x = x * Math.cos(angle) + y * -Math.sin(angle);
+      y = x * Math.sin(angle) + y * Math.cos(angle);
+
+      ctx2.fillStyle = "red";
+      ctx2.fillRect(
+        (x + x0) * scaleX + xAxis - 2,
+        yAxis - scaleY * (y + y0) - 2,
+        4,
+        4
+      );
+
+      x = (i - xAxis) / scaleX;
+      y = -eval(temp);
+      x = x * Math.cos(angle) + y * -Math.sin(angle);
+      y = x * Math.sin(angle) + y * Math.cos(angle);
+      ctx2.fillRect(
+        (x + x0) * scaleX + xAxis - 2,
+        yAxis - scaleY * (y + y0) - 2,
+        4,
+        4
+      );
+
+      if (i + (XGridOnly ? scaleX : scaleX / STEP) <= x0 + xAxis + a * scaleX) {
+        x = (i - xAxis) / scaleX;
+        y = eval(temp);
+        x = x * Math.cos(angle) + y * -Math.sin(angle);
+        y = x * Math.sin(angle) + y * Math.cos(angle);
+
+        let xTemp = (i + (XGridOnly ? scaleX : scaleX / STEP) - xAxis) / scaleX;
+        temp = fTemp
+          .replace(/(\d+)x/, "$1*x")
+          .replace("^", "**")
+          .replace(/x/g, `${xTemp}`)
+          .replace(/--([.0-9]+)\*\*/g, "-(-$1)**")
+          .replace(/-([.0-9]+\*\*2)/, "-($1)");
+
+        let yTemp = eval(temp);
+
+        xTemp = xTemp * Math.cos(angle) + yTemp * -Math.sin(angle);
+        yTemp = xTemp * Math.sin(angle) + yTemp * Math.cos(angle);
+
+        ctx2.strokeStyle = "blue";
+        line(
+          (x + x0) * scaleX + xAxis,
+          yAxis - scaleY * (y + y0),
+          (xTemp + x0) * scaleX + xAxis,
+          yAxis + y0 - scaleY * yTemp
+        );
+
+        x = (i - xAxis) / scaleX;
+        temp = fTemp
+          .replace(/(\d+)x/, "$1*x")
+          .replace("^", "**")
+          .replace(/x/g, `${x}`)
+          .replace(/--([.0-9]+)\*\*/g, "-(-$1)**")
+          .replace(/-([.0-9]+\*\*2)/, "-($1)");
+
+        y = -eval(temp);
+        x = x * Math.cos(angle) + y * -Math.sin(angle);
+        y = x * Math.sin(angle) + y * Math.cos(angle);
+        xTemp = (i + (XGridOnly ? scaleX : scaleX / STEP) - xAxis) / scaleX;
+        temp = fTemp
+          .replace(/(\d+)x/, "$1*x")
+          .replace("^", "**")
+          .replace(/x/g, `${xTemp}`)
+          .replace(/--([.0-9]+)\*\*/g, "-(-$1)**")
+          .replace(/-([.0-9]+\*\*2)/, "-($1)");
+
+        yTemp = -eval(temp);
+        xTemp = xTemp * Math.cos(angle) + yTemp * -Math.sin(angle);
+        yTemp = xTemp * Math.sin(angle) + yTemp * Math.cos(angle);
+        line(
+          (x + x0) * scaleX + xAxis,
+          yAxis - scaleY * (y + y0),
+          (xTemp + x0) * scaleX + xAxis,
+          yAxis + y0 - scaleY * yTemp
+        );
+      }
+    }
+  }
 }
