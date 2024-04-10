@@ -9,12 +9,16 @@
   </head>
   <body>
     <div class="mainDiv">
+			<button id="Snapping"><span id="snapText" class="snapToGrid">Snap to grid: </span><span id="snapParam" class="snapToGrid">false</span></button>
       <canvas id="canvas" width="800px" height="600px"> </canvas>
-      <input
+			<div class="inputNExample">
+				<input
         type="text"
         id="inpFunction"
         placeholder="13x^2+18xy+37y^2-26x-18y-27"
-      />
+				/>
+				<button id="Example">Example</button>
+			</div>
     </div>
     <script type="module" src="/main.js"></script>
   </body>

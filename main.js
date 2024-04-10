@@ -14,7 +14,11 @@ var yAxis = Math.round(canvasHeight / scaleY / 2) * scaleY;
 
 var mouseInCanvas = false;
 
-const XGridOnly = false;
+var snapButton = document.getElementById("Snapping");
+var snapParam = document.getElementById("snapParam");
+var XGridOnly = false;
+
+const exampleButton = document.getElementById("Example");
 const STEP = 5;
 
 // getEllips("13x^2+18xy+37y^2-26x-18y-27");
@@ -22,6 +26,8 @@ const STEP = 5;
 drawGrid();
 // drawDiagram("x^2+3");
 drawDiagram("13x^2+18xy+37y^2-26x-18y-27");
+inputField.value = "13x^2+18xy+37y^2-26x-18y-27";
+
 function drawGrid() {
   ctx2.clearRect(0, 0, canvasWidth, canvasHeight);
 
@@ -65,6 +71,25 @@ canvas.addEventListener("mouseleave", () => {
   mouseInCanvas = false;
 });
 
+exampleButton.addEventListener("click", () => {
+	F = "13x^2+18xy+37y^2-26x-18y-27";
+	inputField.value = "13x^2+18xy+37y^2-26x-18y-27";
+	drawGrid();
+	drawDiagram(F);
+});
+
+snapButton.addEventListener("click", () => {
+  XGridOnly = !XGridOnly;
+  snapParam.textContent = XGridOnly;
+  if (XGridOnly) {
+    snapParam.style.color = "rgb(83, 232, 60)";
+  } else {
+    snapParam.style.color = "rgb(232, 60, 60)";
+  }
+  drawGrid();
+  drawDiagram(F);
+});
+
 /**
  * @param f string
  */
@@ -86,12 +111,16 @@ function drawDiagram(f) {
     );
     return;
   }
-  for (let i = 0; i <= canvasWidth; i += 1) {
+  for (
+    let i = xAxis - canvasWidth;
+    i <= canvasWidth;
+    i += XGridOnly ? scaleX : (STEP * scaleX) / 20
+  ) {
     if (
-      (XGridOnly ? (i - xAxis) % scaleX == 0 : i % (scaleX / STEP) == 0) &&
-      i != 0
+      true ||
+      ((XGridOnly ? (i - xAxis) % scaleX == 0 : i % (scaleX / STEP) == 0) &&
+        i != 0)
     ) {
-      console.log(i);
       const x = (i - xAxis) / scaleX;
 
       let fTemp = f.slice(0);
@@ -103,13 +132,13 @@ function drawDiagram(f) {
         .replace(/-x\*\*/g, "(-x)**");
 
       const y = eval(temp);
-      //console.log(y);
+
       if (y != Infinity && y != -Infinity) {
         ctx2.fillStyle = "red";
         ctx2.fillRect(x * scaleX + xAxis - 2, yAxis - scaleY * y - 2, 4, 4);
         if (i + (XGridOnly ? scaleX : scaleX / STEP) <= canvasWidth) {
           let xTemp =
-            (i + (XGridOnly ? scaleX : scaleX / STEP) - xAxis) / scaleX;
+            (i + (XGridOnly ? scaleX : (scaleX * STEP) / 20) - xAxis) / scaleX;
           let yTemp = eval(temp.replace(`${x}`, `${xTemp}`));
           ctx2.strokeStyle = "blue";
           line(
@@ -127,7 +156,6 @@ function drawDiagram(f) {
 canvas.addEventListener("mousemove", (e) => {
   if (mouseInCanvas) {
     if (e.buttons & 1) {
-      // console.log(e);
       xAxis += e.movementX;
       yAxis += e.movementY;
       drawGrid();
@@ -157,16 +185,21 @@ canvas.addEventListener("wheel", (e) => {
   }
   drawGrid();
   drawDiagram(F);
-  console.log(scaleX, scaleY);
 });
 
 inputField.addEventListener("keyup", (e) => {
-  //if (e.key == "Enter") {
-  console.log(inputField.value);
-  drawGrid();
-  F = inputField.value;
-  drawDiagram(inputField.value);
-  //}
+  let blackList = ["Backspace", "Shift", "+", "-", "Control", "^"];
+  if (!blackList.includes(e.key)) {
+    console.log(e.key);
+    drawGrid();
+    F = inputField.value;
+    if (inputField.value == "") {
+      F = "13x^2+18xy+37y^2-26x-18y-27";
+      drawDiagram(F);
+    } else {
+      drawDiagram(inputField.value);
+    }
+  }
 });
 
 function getEllips(f) {
@@ -211,7 +244,6 @@ function getEllips(f) {
   A[0][0] = baseA;
   A[0][1] = A[1][0] = baseB;
   A[1][1] = baseC;
-  // console.log(A);
 
   if (Determinant(A) != 0) {
     // Finding S, delata and nD
@@ -290,7 +322,6 @@ function getEllips(f) {
 
     a = 1 / a;
     b = 1 / b;
-    // console.log(equation, a, b);
 
     // Finding x0 and y0
     let y0 = parseInt(
@@ -299,12 +330,10 @@ function getEllips(f) {
     let x0 = parseInt(
       ((baseB * baseE) / baseC - baseD) / (baseA - baseB ** 2 / baseC)
     );
-    // console.log(x0, y0);
 
     // Finding rotation angle of the new coordinate system
 
     let newAngle = Math.atan((2 * baseB) / (baseA - baseC)) / 2;
-    // console.log(newAngle);
 
     // Returning sizes (a, b), start point (x0, y0) and angle of the new coordinate system (newAngle)
     return [a, b, x0, y0, newAngle, equation];
@@ -350,17 +379,20 @@ function Determinant(A) {
 }
 
 function drawEllipse(a, b, x0, y0, angle, f) {
-  for (let i = 0 + xAxis - a * scaleX; i <= 0 + xAxis + a * scaleX; i += 1) {
+  for (
+    let i = 0 + xAxis - a * scaleX;
+    i <= 0 + xAxis + a * scaleX;
+    i += XGridOnly ? scaleX : STEP
+  ) {
     if (
-      (XGridOnly ? (i - xAxis) % scaleX == 0 : i % (scaleX / STEP) == 0) &&
-      i != 0
+      true ||
+      ((XGridOnly ? (i - xAxis) % scaleX == 0 : i % (scaleX / STEP) == 0) &&
+        i != 0)
     ) {
-      console.log("test");
       let groups = f.match(/([+-]?)([.0-9]+)x\^2([+-]+[.0-9]+)y\^2/);
 
-      let fTemp = `Math.sqrt(Math.abs((${groups[3]})*(1-x**2*${groups[1]}${groups[2]})))`;
+      let fTemp = `Math.sqrt(Math.abs((1-x**2*${groups[1]}${groups[2]})/(${groups[3]})))`;
       let x = (i - xAxis) / scaleX;
-      console.log(x);
       let temp = fTemp
         .replace(/(\d+)x/, "$1*x")
         .replace("^", "**")
@@ -416,7 +448,7 @@ function drawEllipse(a, b, x0, y0, angle, f) {
           (x + x0) * scaleX + xAxis,
           yAxis - scaleY * (y + y0),
           (xTemp + x0) * scaleX + xAxis,
-          yAxis + y0 - scaleY * yTemp
+          yAxis - scaleY * (yTemp + y0)
         );
 
         x = (i - xAxis) / scaleX;
@@ -445,7 +477,7 @@ function drawEllipse(a, b, x0, y0, angle, f) {
           (x + x0) * scaleX + xAxis,
           yAxis - scaleY * (y + y0),
           (xTemp + x0) * scaleX + xAxis,
-          yAxis + y0 - scaleY * yTemp
+          yAxis - scaleY * (yTemp + y0)
         );
       }
     }
